@@ -28,7 +28,7 @@ public class MainActivity extends AppCompatActivity {
         TextView textView = findViewById(R.id.points);
 
 
-        game = new Game(this,textView);
+        game = new Game(this, textView);
         game.setGameView(gameView);
         gameView.setGame(game);
 

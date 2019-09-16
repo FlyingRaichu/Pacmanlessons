@@ -4,9 +4,11 @@ import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.widget.TextView;
+import android.widget.Toast;
 
 
 import java.util.ArrayList;
+import java.util.Random;
 
 /**
  *
@@ -20,11 +22,15 @@ public class Game {
 
     //bitmap of the pacman
     private Bitmap pacBitmap;
+    private Bitmap coinBitmap;
+    Random rnd = new Random();
+    int rintx = rnd.nextInt(1000);
+    int rinty = rnd.nextInt(1000);
     //textview reference to points
     private TextView pointsView;
     private int pacx, pacy;
     //the list of goldcoins - initially empty
-    private ArrayList<GoldCoin> coins = new ArrayList<>();
+    public ArrayList<GoldCoin> coins = new ArrayList<>();
     //a reference to the gameview
     private GameView gameView;
     private int h,w; //height and width of screen
@@ -34,7 +40,7 @@ public class Game {
         this.context = context;
         this.pointsView = view;
         pacBitmap = BitmapFactory.decodeResource(context.getResources(), R.drawable.pacman);
-
+        coinBitmap = BitmapFactory.decodeResource(context.getResources(), R.drawable.goldcoin);
     }
 
     public void setGameView(GameView view)
@@ -50,6 +56,15 @@ public class Game {
         //reset the points
         points = 0;
         pointsView.setText(context.getResources().getString(R.string.points)+" "+points);
+
+        coins.add(new GoldCoin(rintx, rinty, false));
+        rintx = rnd.nextInt(1000);
+        rinty = rnd.nextInt(1000);
+        coins.add(new GoldCoin(rintx, rinty, false));
+        rintx = rnd.nextInt(1000);
+        rinty = rnd.nextInt(1000);
+        coins.add(new GoldCoin(rintx, rinty, false));
+
         gameView.invalidate(); //redraw screen
     }
 
@@ -100,8 +115,37 @@ public class Game {
     //check each of them for a collision with the pacman
     public void doCollisionCheck()
     {
+        for (GoldCoin coin: coins) {
+            int centerpacx = pacx + pacBitmap.getWidth()/2;
+            int centerpacy = pacy + pacBitmap.getHeight()/2;
 
+            int centercoinx = coin.getCoinx() + coinBitmap.getWidth()/2;
+            int centercoiny = coin.getCoiny() + coinBitmap.getHeight()/2;
+
+            double distance = Math.sqrt(Math.pow((centerpacy - centercoiny), 2) + Math.pow((centerpacx - centercoinx), 2));
+
+            if (distance < 80 && !coin.IsPickedUp()) {
+                coin.setIsPickedUp(true);
+                points++;
+                pointsView.setText(context.getResources().getString(R.string.points)+" "+points);
+            }
+
+            if (doWinCheck()) {
+                Toast.makeText(context, "You win!", Toast.LENGTH_LONG).show();
+            }
+        }
     }
+
+
+    public boolean doWinCheck() {
+        for (GoldCoin coin : coins) {
+            if (!coin.IsPickedUp()) {
+                return false;
+            }
+        }
+        return true;
+    }
+
 
     public int getPacx()
     {
@@ -126,6 +170,11 @@ public class Game {
     public Bitmap getPacBitmap()
     {
         return pacBitmap;
+    }
+
+    public Bitmap getcoinBitmap()
+    {
+        return coinBitmap;
     }
 
 
